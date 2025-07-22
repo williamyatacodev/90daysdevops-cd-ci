@@ -19,10 +19,17 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Configurar Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '21' 
+
     - name: Instalar dependencias
       run: |
         pip install -r vote/requirements.txt
+        npm install result
 
     - name: Ejecutar tests
       run: |
         pytest vote/tests/ -v
+        npm test

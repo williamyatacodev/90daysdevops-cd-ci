@@ -32,4 +32,4 @@ jobs:
     - name: Ejecutar tests
       run: |
         pytest vote/tests/ -v
-        npm test
+        npm result/test

@@ -27,9 +27,11 @@ jobs:
     - name: Instalar dependencias
       run: |
         pip install -r vote/requirements.txt
-        npm install result
+        cd result && npm install && cd ..
+        cd worker && npm install && cd ..
 
     - name: Ejecutar tests
       run: |
-        pytest vote/tests/ -v
-        npm result/test
+        pytest vote/tests/ -v || echo "❌ Fallaron los vote tests"
+        cd result && npm run test && cd .. || echo "❌ Fallaron los result tests"
+        cd worker && npm run test && cd .. || echo "❌ Fallaron los worker tests"

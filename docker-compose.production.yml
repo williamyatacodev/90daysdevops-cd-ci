@@ -1,0 +1,107 @@
+
+services:
+
+  vote:
+    build:
+      context: vote
+    depends_on:
+      redis:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/healthz"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - frontend
+      - backend
+
+
+  worker:
+    build:
+      context: worker
+    depends_on:
+      redis:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+    networks:
+      - backend
+
+  result:
+    build:
+      context: result
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "3000:${APP_PORT}"
+    environment:
+      - APP_PORT=${APP_PORT}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}/healthz"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - frontend
+      - backend
+
+  redis:
+    image: redis:8.0.2-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - backend
+
+  database:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - "90days-db-data:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DATABASE_USER}"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - backend
+
+volumes:
+  90days-db-data:
+
+networks:
+  frontend:
+  backend:

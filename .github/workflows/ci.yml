@@ -1,14 +1,14 @@
-name: CI
+name: ci
 
 on:
   push:
-    branches: [master, feature/pipeline_test]
+    branches: [develop]
   pull_request:
-    branches: [master]
+    branches: [develop]
 
 jobs:
-  test:
-    runs-on: self-hosted
+  unit-tests:
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
@@ -30,8 +30,35 @@ jobs:
         cd result && npm install && cd ..
         cd worker && npm install && cd ..
 
-    - name: Ejecutar tests
+    - name: Ejecutar tests App Vote
+      working-directory: ./vote
       run: |
-        pytest vote/tests/ -v || echo "❌ Fallaron los vote tests"
-        cd result && npm run test && cd .. || echo "❌ Fallaron los result tests"
-        cd worker && npm run test && cd .. || echo "❌ Fallaron los worker tests"
+        pytest tests/ -v || echo "❌ Fallaron los vote tests"
+
+    - name: Ejecutar tests App Result
+      working-directory: ./result
+      run: |
+        npm run test || echo "❌ Fallaron los result tests"
+
+    - name: Ejecutar tests App Worker
+      working-directory: ./worker
+      run: |
+        npm run test || echo "❌ Fallaron los worker tests"
+
+  unit-test-integration:
+    runs-on: self-hosted
+    needs: unit-tests
+    steps:
+    - name: Construir servicios
+      run: docker compose -f docker-compose.yml up -d
+
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Unit Test Integration
+      working-directory: ./scripts
+      run: |
+        pip install -r requirements.txt
+        python integration_test.py

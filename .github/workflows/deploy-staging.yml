@@ -2,7 +2,7 @@ name: autodeploy_staging
 
 on:
   workflow_run:
-    workflows: ["ci-cd"]
+    workflows: ["ci_cd"]
     types:
       - completed
 
@@ -10,6 +10,7 @@ jobs:
   deploy:
     runs-on: [self-hosted, staging]
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     steps:
     - name: Checkout código
       uses: actions/checkout@v4

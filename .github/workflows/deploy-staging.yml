@@ -1,8 +1,8 @@
-name: AutoDeploy Staging
+name: autodeploy_staging
 
 on:
   workflow_run:
-    workflows: ["ci"]
+    workflows: ["ci-cd"]
     types:
       - completed
     branches:

@@ -3,8 +3,7 @@ name: autodeploy_staging
 on:
   workflow_run:
     workflows: ["ci-cd"]
-    types:
-      - completed
+    types: [completed]
     branches:
       - develop
 

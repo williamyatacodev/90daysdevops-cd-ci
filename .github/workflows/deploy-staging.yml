@@ -4,8 +4,6 @@ on:
   workflow_run:
     workflows: ["ci-cd"]
     types: [completed]
-    branches:
-      - develop
 
 jobs:
   deploy:

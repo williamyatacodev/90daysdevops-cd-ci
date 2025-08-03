@@ -1,14 +1,16 @@
 name: AutoDeploy Staging
 
 on:
-  workflows: ["ci"]
-    types: [completed]
+  workflow_run:
+    workflows: ["ci"]
+    types:
+      - completed
     branches:
       - 'develop'
 
 jobs:
   deploy:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, staging]
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
     - name: Checkout código

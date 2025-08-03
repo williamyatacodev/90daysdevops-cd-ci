@@ -46,7 +46,7 @@ jobs:
         npm run test || echo "❌ Fallaron los worker tests"
 
   unit-test-integration:
-    runs-on: self-hosted
+    runs-on: [self-hosted, staging]
     needs: unit-tests
     steps:
     - name: Construir servicios

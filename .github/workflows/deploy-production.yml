@@ -1,0 +1,39 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, production]
+    environment:
+      name: production
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Parar servicios anteriores
+      run: docker compose down -v || true
+
+    - name: Levantar servicios
+      run: docker compose -f docker-compose.production.yml build up -d
+
+    - name: Ver estado de contenedores
+      run: docker ps -a
+
+    - name: Verificar app Result
+      run: |
+        for i in {1..15}; do
+          curl -sf http://localhost:3000/healthz && break
+          echo "Esperando servicio en http://localhost:3000/healthz"
+          sleep 2
+        done
+
+    - name: Verificar app Vote
+      run: |
+        for i in {1..15}; do
+          curl -sf http://localhost/healthz && break
+          echo "Esperando servicio en http://localhost/healthz"
+          sleep 2
+        done

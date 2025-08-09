@@ -13,6 +13,14 @@ jobs:
     - name: Checkout código
       uses: actions/checkout@v4
 
+    - name: Notificar a Discord Aprobación
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -X POST -H "Content-Type: application/json" \
+          -d "{\"content\":\":hourglass: Esperando aprobación para desplegar *${github.repository}* a *producción*\"}" \
+          $DISCORD_WEBHOOK
+
     - name: Parar servicios anteriores
       run: docker compose down -v || true
 
@@ -37,3 +45,13 @@ jobs:
           echo "Esperando servicio en http://localhost/healthz"
           sleep 2
         done
+
+
+    - name: Notificar a Discord
+      if: success()
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -X POST -H "Content-Type: application/json" \
+          -d "{\"content\":\":rocket: Despliegue exitoso en *producción* por *${github.actor}*\"}" \
+          $DISCORD_WEBHOOK
